@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration.UserSecrets;
+using Serilog;
 using StaticFilesServer.Models;
 using StaticFilesServer.StatisticModels;
 using System;
@@ -10,16 +12,35 @@ namespace StaticFilesServer.Utils
 {
     public static class Utils
     {
+        private static ILogger _log = Log.ForContext(typeof(PathHelper));
+
+        /// <summary>
+        /// Gets FileStream by given source_path
+        /// </summary>
+        /// <param name="project_root">Global root of project</param>
+        /// <param name="source">Source information</param>
+        /// <returns>Content of Source</returns>
         public static FileStreamResult GetSourceByPath(string project_root, Sources source)
         {
             string source_path = Path.Join(project_root, source.SourcePath);
-            var stream = File.OpenRead(source_path);
-            return new FileStreamResult(
-                stream,
-                GetMimeBySourceType(source.SourceType)
-            );
+            try
+            {
+                var stream = File.OpenRead(source_path);
+                return new FileStreamResult(
+                            stream,
+                            GetMimeBySourceType(source.SourceType));
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"{ex.Message} {ex.StackTrace}");
+                throw;
+            }
         }
-
+        /// <summary>
+        /// Get mime string by Type of Source 
+        /// </summary>
+        /// <param name="sourceType">Type of source (Enum)</param>
+        /// <returns>Mime type string</returns>
         public static string GetMimeBySourceType(Sources.SourceTypes sourceType)
         {
             switch (sourceType)
@@ -30,11 +51,15 @@ namespace StaticFilesServer.Utils
                     return "text/css";
                 case Sources.SourceTypes.Image:
                     return "image/*";
+                default:
+                    return "application/empty";
             }
-
-            return string.Empty;
         }
-
+        /// <summary>
+        /// Runs raw sql and deserilize it to inner model LastDownloadeds
+        /// </summary>
+        /// <param name="connection">Database connection of Dbcontext</param>
+        /// <returns>Generator of LastDownloadeds type</returns>
         public static IEnumerable<LastDownloadeds> GetLastDownloadeds(DbConnection connection)
         {
             using (var command = connection.CreateCommand())
@@ -58,21 +83,35 @@ namespace StaticFilesServer.Utils
                 ";
                 using (var sqReader = command.ExecuteReader())
                 {
+                    LastDownloadeds lastDownloadeds = null;
                     while (sqReader.Read())
                     {
-                        var source_type = int.Parse(sqReader[2].ToString());
-                        yield return new LastDownloadeds
+                        try
                         {
-                            BrowserId = sqReader[0].ToString(),
-                            SourceName = sqReader[1].ToString(),
-                            SourceType = ((Sources.SourceTypes)source_type).ToString(),
-                            DownloadTime = DateTime.Parse(sqReader[3].ToString()),
-                        };
+                            var source_type = int.Parse(sqReader[2].ToString());
+                            lastDownloadeds = new LastDownloadeds
+                            {
+                                BrowserId = sqReader[0].ToString(),
+                                SourceName = sqReader[1].ToString(),
+                                SourceType = ((Sources.SourceTypes)source_type).ToString(),
+                                DownloadTime = DateTime.Parse(sqReader[3].ToString()),
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error($"{ex.Message} {ex.StackTrace}");
+                            throw;
+                        }
+                        yield return lastDownloadeds;
                     }
                 }
             }
         }
-
+        /// <summary>
+        /// Runs raw sql and deserilize it to inner model CountDownloadeds
+        /// </summary>
+        /// <param name="connection">Database connection of Dbcontext</param>
+        /// <returns>Generator of CountDownloadeds type</returns>
         public static IEnumerable<CountDownloadeds> GetCountDownloadeds(DbConnection connection)
         {
             using (var command = connection.CreateCommand())
@@ -94,15 +133,25 @@ namespace StaticFilesServer.Utils
                 ";
                 using (var sqReader = command.ExecuteReader())
                 {
+                    CountDownloadeds countDownloadeds = null;
                     while (sqReader.Read())
                     {
-                        var source_type = int.Parse(sqReader[2].ToString());
-                        yield return new CountDownloadeds
+                        try
                         {
-                            BrowserId = sqReader[0].ToString(),
-                            SourceName = sqReader[1].ToString(),
-                            Count = int.Parse(sqReader[2].ToString())
-                        };
+                            countDownloadeds = new CountDownloadeds
+                            {
+                                BrowserId = sqReader[0].ToString(),
+                                SourceName = sqReader[1].ToString(),
+                                Count = int.Parse(sqReader[2].ToString())
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Error($"{ex.Message} {ex.StackTrace}");
+                            throw;
+                        }
+
+                        yield return countDownloadeds;
                     }
                 }
             }

@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>StaticFilesServer</name>
+    </assembly>
+    <members>
+        <member name="M:StaticFilesServer.Controllers.ServiceActionsController.GetSources(System.Guid)">
+            <summary>
+            Get request for collect statics
+            </summary>
+            <remarks>
+            Gets browser_id from Cookie if cookie empty it initialize new guid in cookies
+            </remarks>
+            <param name="source_id">Used to indicate source which was downloaded</param>
+            <returns>FileStram which linked to source_id</returns>
+        </member>
+        <member name="M:StaticFilesServer.Controllers.StatisticsController.GetCountDownloaded">
+            <summary>
+            Get statistics of count each resuorce per browser id
+            </summary>
+        </member>
+        <member name="M:StaticFilesServer.Controllers.StatisticsController.GetLastDownloaded">
+            <summary>
+            Get statistics of last downloaded time for each resource per user id
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.CountDownloadeds.BrowserId">
+            <summary>
+            Browser Uid which stored in cookies
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.CountDownloadeds.SourceName">
+            <summary>
+            Name of Source
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.CountDownloadeds.Count">
+            <summary>
+            Count how much Source was downloaded
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.LastDownloadeds.BrowserId">
+            <summary>
+            Browser Uid which stored in cookies
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.LastDownloadeds.SourceName">
+            <summary>
+            Name of Source
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.LastDownloadeds.SourceType">
+            <summary>
+            Extension of Source
+            </summary>
+        </member>
+        <member name="P:StaticFilesServer.StatisticModels.LastDownloadeds.DownloadTime">
+            <summary>
+            Time when source was requested to download
+            </summary>
+        </member>
+        <member name="M:StaticFilesServer.Utils.Utils.GetSourceByPath(System.String,StaticFilesServer.Models.Sources)">
+            <summary>
+            Gets FileStream by given source_path
+            </summary>
+            <param name="project_root">Global root of project</param>
+            <param name="source">Source information</param>
+            <returns>Content of Source</returns>
+        </member>
+        <member name="M:StaticFilesServer.Utils.Utils.GetMimeBySourceType(StaticFilesServer.Models.Sources.SourceTypes)">
+            <summary>
+            Get mime string by Type of Source 
+            </summary>
+            <param name="sourceType">Type of source (Enum)</param>
+            <returns>Mime type string</returns>
+        </member>
+        <member name="M:StaticFilesServer.Utils.Utils.GetLastDownloadeds(System.Data.Common.DbConnection)">
+            <summary>
+            Runs raw sql and deserilize it to inner model LastDownloadeds
+            </summary>
+            <param name="connection">Database connection of Dbcontext</param>
+            <returns>Generator of LastDownloadeds type</returns>
+        </member>
+        <member name="M:StaticFilesServer.Utils.Utils.GetCountDownloadeds(System.Data.Common.DbConnection)">
+            <summary>
+            Runs raw sql and deserilize it to inner model CountDownloadeds
+            </summary>
+            <param name="connection">Database connection of Dbcontext</param>
+            <returns>Generator of CountDownloadeds type</returns>
+        </member>
+    </members>
+</doc>

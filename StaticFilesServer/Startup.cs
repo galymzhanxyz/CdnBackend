@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using StaticFilesServer.Models.Context;
 using System.IO;
+using System.Reflection;
 
 namespace StaticFilesServer
 {
@@ -22,9 +23,8 @@ namespace StaticFilesServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var projectPath = Configuration.GetValue<string>(WebHostDefaults.ContentRootKey);
             services.AddDbContext<ApplicationDBContext>(options =>
-                options.UseSqlite($"Data Source={Path.Join(projectPath, "AppData", "data.db")}"));
+                options.UseSqlite($"Data Source={Path.Join(ProjectPath, "AppData", "data.db")}"));
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -37,6 +37,7 @@ namespace StaticFilesServer
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "StaticFilesServer", Version = "v1" });
+                c.IncludeXmlComments(XmlCommentsFilePath);
             });
         }
 
@@ -60,6 +61,22 @@ namespace StaticFilesServer
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private string ProjectPath
+        {
+            get
+            {
+                return Configuration.GetValue<string>(WebHostDefaults.ContentRootKey);
+            }
+        }
+        private string XmlCommentsFilePath
+        {
+            get
+            {
+                var fileName = typeof(Startup).GetTypeInfo().Assembly.GetName().Name + ".xml";
+                return Path.Combine(ProjectPath, fileName);
+            }
         }
     }
 }

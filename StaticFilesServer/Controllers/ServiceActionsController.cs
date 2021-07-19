@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using StaticFilesServer.Models;
 using StaticFilesServer.Models.Context;
 using System;
@@ -15,13 +16,23 @@ namespace StaticFilesServer.Controllers
     {
         private readonly ApplicationDBContext _context;
         private readonly string _contentRoot;
+        private ILogger<ServiceActionsController> _logger;
 
-        public ServiceActionsController(ApplicationDBContext context, IWebHostEnvironment env)
+        public ServiceActionsController(ApplicationDBContext context, IWebHostEnvironment env, ILogger<ServiceActionsController> logger)
         {
             _context = context;
             _contentRoot = env.ContentRootPath;
+            _logger = logger;
         }
 
+        /// <summary>
+        /// Get request for collect statics
+        /// </summary>
+        /// <remarks>
+        /// Gets browser_id from Cookie if cookie empty it initialize new guid in cookies
+        /// </remarks>
+        /// <param name="source_id">Used to indicate source which was downloaded</param>
+        /// <returns>FileStram which linked to source_id</returns>
         [HttpGet]
         [Route("GetSources")]
         [DisableCors]
@@ -32,6 +43,7 @@ namespace StaticFilesServer.Controllers
 
             if (source == null)
             {
+                _logger.LogError($"Cant found source_id with value {source_id}");
                 return NotFound();
             }
 
